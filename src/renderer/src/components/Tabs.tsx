@@ -17,13 +17,13 @@ function Tabs({ tabs }: TabsProps): React.JSX.Element {
     <div className="w-full">
       {/* Tab Headers */}
       <div className="border-b border-gray-200">
-        <nav className="flex space-x-8 px-6" aria-label="Tabs">
+        <nav className="flex space-x-2 px-6" aria-label="Tabs">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={`
-                py-4 px-1 border-b-2 font-medium text-sm transition-colors
+                py-4 px-4 border-b-2 font-medium text-sm transition-colors
                 ${
                   activeTab === tab.id
                     ? 'border-blue-500 text-blue-600'
