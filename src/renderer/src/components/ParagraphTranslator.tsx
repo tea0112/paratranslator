@@ -144,8 +144,8 @@ function ParagraphTranslator(): React.JSX.Element {
             ))}
           </main>
 
-          {/* Right Column: Vietnamese Translation */}
-          <aside className="md:w-2/5 mt-8 md:mt-0">
+          {/* Right Column: Vietnamese Translation - Hidden on mobile, shown on desktop */}
+          <aside className="hidden md:block md:w-2/5 md:mt-0">
             <TranslationPanel translation={translation} englishText={englishText} />
           </aside>
         </div>
