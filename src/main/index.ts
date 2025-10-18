@@ -1,4 +1,4 @@
-import { app, shell, BrowserWindow, ipcMain, dialog } from 'electron'
+import { app, shell, BrowserWindow, ipcMain, dialog, Menu } from 'electron'
 import { join } from 'path'
 import { readFile } from 'fs/promises'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
@@ -25,6 +25,19 @@ function createWindow(): void {
   mainWindow.webContents.setWindowOpenHandler((details) => {
     shell.openExternal(details.url)
     return { action: 'deny' }
+  })
+
+  // Enable right-click context menu in development
+  mainWindow.webContents.on('context-menu', (_, params) => {
+    const menu = Menu.buildFromTemplate([
+      { label: 'Cut', role: 'cut', enabled: params.editFlags.canCut },
+      { label: 'Copy', role: 'copy', enabled: params.editFlags.canCopy },
+      { label: 'Paste', role: 'paste', enabled: params.editFlags.canPaste },
+      { label: 'Select All', role: 'selectAll' },
+      { type: 'separator' },
+      { label: 'Inspect Element', click: () => mainWindow.webContents.inspectElement(params.x, params.y) }
+    ])
+    menu.popup()
   })
 
   // HMR for renderer base on electron-vite cli.
