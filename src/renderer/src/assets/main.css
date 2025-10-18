@@ -1,0 +1,31 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom styles for the interactive sentence translator */
+.interactive-sentence {
+  border-bottom: 2px dotted #93c5fd;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.interactive-sentence:hover {
+  background-color: #eff6ff;
+  border-bottom-style: solid;
+}
+
+.interactive-sentence.active {
+  background-color: #dbeafe;
+  border-bottom-color: #60a5fa;
+  border-bottom-style: solid;
+}
+
+/* Ensure smooth scrolling and proper layout */
+body {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+}
+
+#root {
+  min-height: 100vh;
+}
