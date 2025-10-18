@@ -1,12 +1,9 @@
 import { useState } from 'react'
 import InteractiveParagraph from './InteractiveParagraph'
-import TranslationPanel from './TranslationPanel'
 import { Paragraph } from '../types/translator.types'
 import { DEFAULT_PARAGRAPHS } from '../data/sampleData'
 
 function ParagraphTranslator(): React.JSX.Element {
-  const [translation, setTranslation] = useState<string | null>(null)
-  const [englishText, setEnglishText] = useState<string | null>(null)
   const [activeSentence, setActiveSentence] = useState<{
     paragraphIndex: number
     sentenceIndex: number
@@ -16,13 +13,9 @@ function ParagraphTranslator(): React.JSX.Element {
   const [error, setError] = useState<string | null>(null)
 
   const handleSentenceClick = (
-    translationText: string,
     paragraphIndex: number,
     sentenceIndex: number
   ): void => {
-    const sentence = paragraphs[paragraphIndex][sentenceIndex]
-    setEnglishText(sentence.english)
-    setTranslation(translationText)
     setActiveSentence({ paragraphIndex, sentenceIndex })
   }
 
@@ -71,8 +64,6 @@ function ParagraphTranslator(): React.JSX.Element {
 
       setParagraphs(data as Paragraph[])
       setLoadedFileName(filePath.split('/').pop() || filePath.split('\\').pop() || 'Unknown')
-      setEnglishText(null)
-      setTranslation(null)
       setActiveSentence(null)
     } catch (err) {
       setError(`Error loading file: ${err instanceof Error ? err.message : 'Unknown error'}`)
@@ -83,8 +74,6 @@ function ParagraphTranslator(): React.JSX.Element {
     setParagraphs(DEFAULT_PARAGRAPHS)
     setLoadedFileName(null)
     setError(null)
-    setEnglishText(null)
-    setTranslation(null)
     setActiveSentence(null)
   }
 
@@ -94,7 +83,7 @@ function ParagraphTranslator(): React.JSX.Element {
         <header className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-800">Interactive Paragraphs</h1>
           <p className="text-gray-500 mt-2">
-            Click on any underlined sentence on the left to see its translation on the right.
+            Click on any underlined sentence to see its translation appear inline.
           </p>
 
           {/* File Loader */}
@@ -130,24 +119,16 @@ function ParagraphTranslator(): React.JSX.Element {
           </div>
         </header>
 
-        <div className="flex flex-col md:flex-row md:space-x-8">
-          {/* Left Column: English Paragraphs */}
-          <main className="md:w-3/5 space-y-6 text-gray-700 text-lg leading-relaxed">
-            {paragraphs.map((paragraph, index) => (
-              <InteractiveParagraph
-                key={index}
-                sentences={paragraph}
-                onSentenceClick={handleSentenceClick}
-                activeSentence={activeSentence}
-                paragraphIndex={index}
-              />
-            ))}
-          </main>
-
-          {/* Right Column: Vietnamese Translation - Hidden on mobile, shown on desktop */}
-          <aside className="hidden md:block md:w-2/5 md:mt-0">
-            <TranslationPanel translation={translation} englishText={englishText} />
-          </aside>
+        <div className="space-y-6 text-gray-700 text-lg leading-relaxed">
+          {paragraphs.map((paragraph, index) => (
+            <InteractiveParagraph
+              key={index}
+              sentences={paragraph}
+              onSentenceClick={handleSentenceClick}
+              activeSentence={activeSentence}
+              paragraphIndex={index}
+            />
+          ))}
         </div>
       </div>
     </div>

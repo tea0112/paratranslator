@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import InteractiveSentence from './InteractiveSentence'
 import { InteractiveParagraphProps } from '../types/translator.types'
 
@@ -7,6 +8,14 @@ function InteractiveParagraph({
   activeSentence,
   paragraphIndex
 }: InteractiveParagraphProps): React.JSX.Element {
+  const [copied, setCopied] = useState(false)
+
+  const handleCopy = (text: string) => {
+    navigator.clipboard.writeText(text)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
   return (
     <div>
       <p>
@@ -21,12 +30,22 @@ function InteractiveParagraph({
               <InteractiveSentence
                 sentence={sentence}
                 isActive={isActive}
-                onClick={() => onSentenceClick(sentence.vietnamese, paragraphIndex, index)}
+                onClick={() => onSentenceClick(paragraphIndex, index)}
               />
-              {/* Show translation inline on mobile screens only */}
+              {/* Show translation inline with copy button */}
               {isActive && (
-                <span className="md:hidden inline-block ml-2 px-3 py-1 bg-blue-50 text-blue-700 rounded-lg text-sm italic border border-blue-200">
-                  → {sentence.vietnamese}
+                <span className="inline-flex items-center gap-2 ml-2 px-3 py-1 bg-blue-50 text-blue-700 rounded-lg text-sm italic border border-blue-200">
+                  <span>→ {sentence.vietnamese}</span>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      handleCopy(sentence.english)
+                    }}
+                    className="px-2 py-0.5 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors text-xs"
+                    title="Copy English sentence"
+                  >
+                    {copied ? '✓' : '📋'}
+                  </button>
                 </span>
               )}
             </span>
