@@ -84,7 +84,7 @@ function ParagraphTranslator(): React.JSX.Element {
   }
 
   return (
-    <div className="bg-gray-100 flex justify-center p-4 md:p-8 min-h-screen">
+    <div className="flex justify-center p-4 md:p-8">
       <div className="w-full bg-white rounded-xl shadow-md p-6 md:p-10 lg:p-12 xl:p-16">
         <header className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-800">Interactive Paragraphs</h1>
