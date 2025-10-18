@@ -30,7 +30,7 @@ function TranslationPanel({ translation, englishText }: TranslationPanelProps): 
             ) : (
               <>
                 <span>📋</span>
-                <span>Copy</span>
+                <span>Copy English</span>
               </>
             )}
           </button>
