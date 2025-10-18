@@ -6,6 +6,7 @@ import { DEFAULT_PARAGRAPHS } from '../data/sampleData'
 
 function ParagraphTranslator(): React.JSX.Element {
   const [translation, setTranslation] = useState<string | null>(null)
+  const [englishText, setEnglishText] = useState<string | null>(null)
   const [activeSentence, setActiveSentence] = useState<{
     paragraphIndex: number
     sentenceIndex: number
@@ -19,6 +20,8 @@ function ParagraphTranslator(): React.JSX.Element {
     paragraphIndex: number,
     sentenceIndex: number
   ): void => {
+    const sentence = paragraphs[paragraphIndex][sentenceIndex]
+    setEnglishText(sentence.english)
     setTranslation(translationText)
     setActiveSentence({ paragraphIndex, sentenceIndex })
   }
@@ -68,6 +71,7 @@ function ParagraphTranslator(): React.JSX.Element {
 
       setParagraphs(data as Paragraph[])
       setLoadedFileName(filePath.split('/').pop() || filePath.split('\\').pop() || 'Unknown')
+      setEnglishText(null)
       setTranslation(null)
       setActiveSentence(null)
     } catch (err) {
@@ -79,6 +83,7 @@ function ParagraphTranslator(): React.JSX.Element {
     setParagraphs(DEFAULT_PARAGRAPHS)
     setLoadedFileName(null)
     setError(null)
+    setEnglishText(null)
     setTranslation(null)
     setActiveSentence(null)
   }
@@ -141,7 +146,7 @@ function ParagraphTranslator(): React.JSX.Element {
 
           {/* Right Column: Vietnamese Translation */}
           <aside className="md:w-2/5 mt-8 md:mt-0">
-            <TranslationPanel translation={translation} />
+            <TranslationPanel translation={translation} englishText={englishText} />
           </aside>
         </div>
       </div>

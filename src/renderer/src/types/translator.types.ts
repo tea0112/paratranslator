@@ -42,4 +42,5 @@ export interface InteractiveSentenceProps {
  */
 export interface TranslationPanelProps {
   translation: string | null
+  englishText: string | null
 }
