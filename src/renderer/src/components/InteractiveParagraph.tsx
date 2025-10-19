@@ -275,7 +275,7 @@ function InteractiveParagraph({
             </div>
 
             {/* Action Buttons */}
-            <div className="flex gap-3 justify-end mt-6">
+            <div className="flex gap-3 justify-center mt-6">
               <button
                 onClick={(e) => {
                   e.stopPropagation()
