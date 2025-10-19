@@ -23,7 +23,7 @@ export interface ParagraphTranslatorProps {
  */
 export interface InteractiveParagraphProps {
   sentences: Sentence[]
-  onSentenceClick: (paragraphIndex: number, sentenceIndex: number) => void
+  onSentenceClick: (paragraphIndex: number, sentenceIndex: number, sentence: Sentence) => void
   activeSentence: { paragraphIndex: number; sentenceIndex: number } | null
   paragraphIndex: number
 }

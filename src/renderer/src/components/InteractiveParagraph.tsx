@@ -30,21 +30,22 @@ function InteractiveParagraph({
               <InteractiveSentence
                 sentence={sentence}
                 isActive={isActive}
-                onClick={() => onSentenceClick(paragraphIndex, index)}
+                onClick={() => onSentenceClick(paragraphIndex, index, sentence)}
               />
               {/* Show translation inline with copy button */}
               {isActive && (
-                <span className="inline-flex items-center gap-2 ml-2 px-3 py-1 bg-blue-50 text-blue-700 rounded-lg text-sm italic border border-blue-200">
+                <span className="inline-flex items-center gap-3 ml-3 mr-3 px-3 py-2 bg-blue-50 text-blue-700 rounded-lg text-sm italic border border-blue-200">
                   <span>→ {sentence.vietnamese}</span>
                   <button
                     onClick={(e) => {
                       e.stopPropagation()
                       handleCopy(sentence.english)
                     }}
-                    className="px-2 py-0.5 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors text-xs"
+                    className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors text-xs flex items-center gap-1.5 not-italic font-medium"
                     title="Copy English sentence"
                   >
-                    {copied ? '✓' : '📋'}
+                    <span>{copied ? '✓' : '📋'}</span>
+                    <span>{copied ? 'Copied' : 'Copy'}</span>
                   </button>
                 </span>
               )}
