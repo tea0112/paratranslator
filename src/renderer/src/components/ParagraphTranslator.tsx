@@ -11,6 +11,7 @@ function ParagraphTranslator(): React.JSX.Element {
   const [paragraphs, setParagraphs] = useState<Paragraph[]>(DEFAULT_PARAGRAPHS)
   const [loadedFileName, setLoadedFileName] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [copiedAll, setCopiedAll] = useState(false)
 
   const handleSentenceClick = (
     paragraphIndex: number,
@@ -86,6 +87,15 @@ function ParagraphTranslator(): React.JSX.Element {
     setActiveSentence(null)
   }
 
+  const handleCopyAllEnglish = (): void => {
+    const allEnglishText = paragraphs
+      .map((paragraph) => paragraph.map((sentence) => sentence.english).join(' '))
+      .join('\n\n')
+    navigator.clipboard.writeText(allEnglishText)
+    setCopiedAll(true)
+    setTimeout(() => setCopiedAll(false), 2000)
+  }
+
   return (
     <div className="flex justify-center p-4 md:p-8">
       <div className="w-full bg-white rounded-xl shadow-md p-6 md:p-10 lg:p-12 xl:p-16">
@@ -103,6 +113,13 @@ function ParagraphTranslator(): React.JSX.Element {
                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
               >
                 Load JSON File
+              </button>
+              <button
+                onClick={handleCopyAllEnglish}
+                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
+                title="Copy all English text"
+              >
+                {copiedAll ? '✓ Copied All' : '📋 Copy All English'}
               </button>
               {loadedFileName && (
                 <button

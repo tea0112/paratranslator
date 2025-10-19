@@ -41,11 +41,10 @@ function InteractiveParagraph({
                       e.stopPropagation()
                       handleCopy(sentence.english)
                     }}
-                    className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors text-xs flex items-center gap-1.5 not-italic font-medium"
-                    title="Copy English sentence"
+                    className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors text-sm not-italic"
+                    title={copied ? 'Copied!' : 'Copy English sentence'}
                   >
-                    <span>{copied ? '✓' : '📋'}</span>
-                    <span>{copied ? 'Copied' : 'Copy'}</span>
+                    {copied ? '✓' : '📋'}
                   </button>
                 </span>
               )}
