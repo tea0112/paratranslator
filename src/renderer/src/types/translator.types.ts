@@ -24,6 +24,7 @@ export interface ParagraphTranslatorProps {
 export interface InteractiveParagraphProps {
   sentences: Sentence[]
   onSentenceClick: (paragraphIndex: number, sentenceIndex: number, sentence: Sentence) => void
+  onHideTranslation: () => void
   activeSentence: { paragraphIndex: number; sentenceIndex: number } | null
   paragraphIndex: number
 }

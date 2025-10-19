@@ -5,6 +5,7 @@ import { InteractiveParagraphProps } from '../types/translator.types'
 function InteractiveParagraph({
   sentences,
   onSentenceClick,
+  onHideTranslation,
   activeSentence,
   paragraphIndex
 }: InteractiveParagraphProps): React.JSX.Element {
@@ -32,9 +33,19 @@ function InteractiveParagraph({
                 isActive={isActive}
                 onClick={() => onSentenceClick(paragraphIndex, index, sentence)}
               />
-              {/* Show translation inline with copy button */}
+              {/* Show translation inline with hide and copy buttons */}
               {isActive && (
                 <span className="inline-flex items-center gap-3 ml-3 mr-3 px-3 py-2 bg-blue-50 text-blue-700 rounded-lg text-sm italic border border-blue-200">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      onHideTranslation()
+                    }}
+                    className="px-2 py-1 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors text-sm not-italic"
+                    title="Hide translation"
+                  >
+                    ✕
+                  </button>
                   <span>→ {sentence.vietnamese}</span>
                   <button
                     onClick={(e) => {

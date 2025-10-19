@@ -18,15 +18,11 @@ function ParagraphTranslator(): React.JSX.Element {
     sentenceIndex: number,
     sentence: { english: string; vietnamese: string }
   ): void => {
-    // Toggle: if clicking the same sentence, hide the translation
-    if (
-      activeSentence?.paragraphIndex === paragraphIndex &&
-      activeSentence?.sentenceIndex === sentenceIndex
-    ) {
-      setActiveSentence(null)
-    } else {
-      setActiveSentence({ paragraphIndex, sentenceIndex })
-    }
+    setActiveSentence({ paragraphIndex, sentenceIndex })
+  }
+
+  const handleHideTranslation = (): void => {
+    setActiveSentence(null)
   }
 
   const handleLoadFile = async (): Promise<void> => {
@@ -151,6 +147,7 @@ function ParagraphTranslator(): React.JSX.Element {
               key={index}
               sentences={paragraph}
               onSentenceClick={handleSentenceClick}
+              onHideTranslation={handleHideTranslation}
               activeSentence={activeSentence}
               paragraphIndex={index}
             />
