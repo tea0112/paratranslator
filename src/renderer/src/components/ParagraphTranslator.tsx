@@ -303,11 +303,13 @@ function ParagraphTranslator(): React.JSX.Element {
                 onClick={handleLoadFile}
                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
               >
-                📄 Load Text File
+                📄 Load Article
               </button>
               <button
                 onClick={handleLoadQuiz}
-                className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium"
+                disabled={paragraphs === DEFAULT_PARAGRAPHS && !loadedFileName}
+                className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                title={paragraphs === DEFAULT_PARAGRAPHS && !loadedFileName ? "Load an article first" : "Load quiz to practice"}
               >
                 🧪 Load Quiz
               </button>
@@ -348,8 +350,32 @@ function ParagraphTranslator(): React.JSX.Element {
           </div>
         </header>
 
-        {quizMode ? (
-          <QuizPractice quiz={quiz} onClose={handleCloseQuiz} />
+{quizMode ? (
+          <div className="grid grid-cols-2 gap-6">
+            {/* Article Section - Left Side */}
+            <div className="space-y-6">
+              <h2 className="text-xl font-bold text-gray-800 mb-4">📄 Article</h2>
+              <div className="space-y-6 text-gray-700 text-base leading-relaxed max-h-[70vh] overflow-y-auto pr-4" id="content-area">
+                {paragraphs.map((paragraph, index) => (
+                  <InteractiveParagraph
+                    key={index}
+                    sentences={paragraph}
+                    onSentenceClick={handleSentenceClick}
+                    onHideTranslation={handleHideTranslation}
+                    activeSentence={activeSentence}
+                    paragraphIndex={index}
+                    searchQuery={searchQuery}
+                    caseSensitive={caseSensitive}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* Quiz Section - Right Side */}
+            <div>
+              <QuizPractice quiz={quiz} onClose={handleCloseQuiz} />
+            </div>
+          </div>
         ) : (
           <div className="space-y-6 text-gray-700 text-lg leading-relaxed" id="content-area">
             {paragraphs.map((paragraph, index) => (

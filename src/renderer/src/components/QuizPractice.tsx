@@ -9,8 +9,10 @@ interface QuizPracticeProps {
 function QuizPractice({ quiz, onClose }: QuizPracticeProps): React.JSX.Element {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [userAnswers, setUserAnswers] = useState<Map<number, string | string[] | Record<string, string>>>(new Map())
-  const [showAnswer, setShowAnswer] = useState(false)
+  const [showAnswer, setShowAnswer] = useState(false) // Global answer visibility
   const [shuffledOptions, setShuffledOptions] = useState<Map<number, string[]>>(new Map())
+  const [isSubmitted, setIsSubmitted] = useState(false)
+  const [showStatistics, setShowStatistics] = useState(false)
 
   // Shuffle options for multiple choice questions
   useEffect(() => {
@@ -35,18 +37,14 @@ function QuizPractice({ quiz, onClose }: QuizPracticeProps): React.JSX.Element {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Left arrow for previous
-      if (e.key === 'ArrowLeft') {
-        if (currentIndex > 0) {
-          setCurrentIndex(currentIndex - 1)
-          setShowAnswer(false)
-        }
+      if (e.key === 'ArrowLeft' && currentIndex > 0) {
+        setCurrentIndex(currentIndex - 1)
+        setShowAnswer(false)
       }
       // Right arrow for next
-      if (e.key === 'ArrowRight') {
-        if (quiz && currentIndex < quiz.quiz.length - 1) {
-          setCurrentIndex(currentIndex + 1)
-          setShowAnswer(false)
-        }
+      if (e.key === 'ArrowRight' && quiz && currentIndex < quiz.quiz.length - 1) {
+        setCurrentIndex(currentIndex + 1)
+        setShowAnswer(false)
       }
     }
 
@@ -119,6 +117,41 @@ function QuizPractice({ quiz, onClose }: QuizPracticeProps): React.JSX.Element {
     }
 
     return false
+  }
+
+  const calculateScore = () => {
+    if (!quiz) return { correct: 0, total: 0, percentage: 0 }
+    
+    let correct = 0
+    quiz.quiz.forEach((question) => {
+      const userAns = userAnswers.get(question.id)
+      if (!userAns) return
+      
+      const answer = question.answer
+      
+      // Check if answer is correct
+      if (typeof answer === 'object' && !Array.isArray(answer) && typeof userAns === 'object' && !Array.isArray(userAns)) {
+        if (Object.keys(answer).every(key => answer[key] === userAns[key])) correct++
+      } else if (Array.isArray(answer)) {
+        if (Array.isArray(userAns)) {
+          if (answer.length === userAns.length && answer.every(a => userAns.includes(a))) correct++
+        } else if (typeof userAns === 'string') {
+          if (answer.length === 1 && answer[0] === userAns) correct++
+        }
+      } else if (typeof answer === 'string' && typeof userAns === 'string') {
+        if (userAns.trim().toLowerCase() === answer.toLowerCase()) correct++
+      }
+    })
+    
+    const total = quiz.quiz.length
+    const percentage = total > 0 ? Math.round((correct / total) * 100) : 0
+    
+    return { correct, total, percentage }
+  }
+
+  const handleSubmit = () => {
+    setIsSubmitted(true)
+    setShowStatistics(true)
   }
 
   const renderQuestionContent = () => {
@@ -285,16 +318,25 @@ function QuizPractice({ quiz, onClose }: QuizPracticeProps): React.JSX.Element {
   }
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="h-full flex flex-col">
       {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-800">Quiz Practice</h2>
-        <button
-          onClick={onClose}
-          className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
-        >
-          Close Quiz
-        </button>
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-xl font-bold text-gray-800">🧪 Quiz Practice</h2>
+        <div className="flex gap-3">
+          <button
+            onClick={handleSubmit}
+            disabled={isSubmitted}
+            className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isSubmitted ? '✓ Submitted' : 'Submit Quiz'}
+          </button>
+          <button
+            onClick={onClose}
+            className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+          >
+            Close
+          </button>
+        </div>
       </div>
 
       {/* Progress */}
@@ -366,8 +408,9 @@ function QuizPractice({ quiz, onClose }: QuizPracticeProps): React.JSX.Element {
         </div>
       </div>
 
-      {/* Question Card */}
-      <div className="bg-white rounded-xl shadow-md p-8 mb-6">
+      {/* Question Card - Scrollable */}
+      <div className="flex-1 overflow-y-auto mb-4">
+      <div className="bg-white rounded-xl shadow-md p-6">
         <div className="mb-4">
           <span className="inline-block px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium mb-3">
             {currentQuestion.type}
@@ -435,6 +478,7 @@ function QuizPractice({ quiz, onClose }: QuizPracticeProps): React.JSX.Element {
           </div>
         )}
       </div>
+      </div>
 
       {/* Navigation */}
       <div className="flex justify-between items-center">
@@ -463,6 +507,111 @@ function QuizPractice({ quiz, onClose }: QuizPracticeProps): React.JSX.Element {
           Next →
         </button>
       </div>
+
+      {/* Statistics Modal */}
+      {showStatistics && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-2xl p-8 max-w-2xl w-full mx-4">
+            <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">📊 Quiz Results</h2>
+            
+            {(() => {
+              const stats = calculateScore()
+              return (
+                <>
+                  {/* Score Display */}
+                  <div className="text-center mb-8">
+                    <div className="inline-block">
+                      <div className={`text-6xl font-bold mb-2 ${
+                        stats.percentage >= 80 ? 'text-green-600' : 
+                        stats.percentage >= 60 ? 'text-yellow-600' : 
+                        'text-red-600'
+                      }`}>
+                        {stats.percentage}%
+                      </div>
+                      <p className="text-xl text-gray-600">
+                        {stats.correct} out of {stats.total} correct
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Performance Message */}
+                  <div className="text-center mb-6">
+                    {stats.percentage >= 90 && (
+                      <p className="text-xl text-green-600 font-semibold">🎉 Excellent! Outstanding performance!</p>
+                    )}
+                    {stats.percentage >= 80 && stats.percentage < 90 && (
+                      <p className="text-xl text-green-600 font-semibold">✨ Great job! Well done!</p>
+                    )}
+                    {stats.percentage >= 60 && stats.percentage < 80 && (
+                      <p className="text-xl text-yellow-600 font-semibold">👍 Good work! Keep practicing!</p>
+                    )}
+                    {stats.percentage < 60 && (
+                      <p className="text-xl text-orange-600 font-semibold">💪 Keep learning! Review the material and try again!</p>
+                    )}
+                  </div>
+
+                  {/* Question Breakdown */}
+                  <div className="bg-gray-50 rounded-lg p-4 mb-6">
+                    <h3 className="font-semibold text-gray-800 mb-3">Question Breakdown:</h3>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="flex items-center gap-2">
+                        <span className="text-2xl">✅</span>
+                        <span className="text-gray-700">Correct: <strong>{stats.correct}</strong></span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-2xl">❌</span>
+                        <span className="text-gray-700">Incorrect: <strong>{stats.total - stats.correct}</strong></span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-2xl">📝</span>
+                        <span className="text-gray-700">Answered: <strong>{userAnswers.size}</strong></span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-2xl">⏭️</span>
+                        <span className="text-gray-700">Skipped: <strong>{stats.total - userAnswers.size}</strong></span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex gap-3 justify-center">
+                    <button
+                      onClick={() => {
+                        setShowStatistics(false)
+                        setCurrentIndex(0)
+                      }}
+                      className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                    >
+                      Review Answers
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowStatistics(false)
+                        setUserAnswers(new Map())
+                        setShowAnswer(false)
+                        setIsSubmitted(false)
+                        setCurrentIndex(0)
+                      }}
+                      className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
+                    >
+                      Retry Quiz
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowStatistics(false)
+                        onClose()
+                      }}
+                      className="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors font-medium"
+                    >
+                      Close
+                    </button>
+                  </div>
+                </>
+              )
+            })()}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
