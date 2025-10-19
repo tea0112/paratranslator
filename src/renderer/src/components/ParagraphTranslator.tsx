@@ -13,6 +13,7 @@ function ParagraphTranslator(): React.JSX.Element {
   const [showTranslation, setShowTranslation] = useState(true) // Control translation visibility separately
   const [paragraphs, setParagraphs] = useState<Paragraph[]>(DEFAULT_PARAGRAPHS)
   const [loadedFileName, setLoadedFileName] = useState<string | null>(null)
+  const [loadedFilePath, setLoadedFilePath] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [copiedAll, setCopiedAll] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
@@ -30,7 +31,7 @@ function ParagraphTranslator(): React.JSX.Element {
   const handleSentenceClick = (
     paragraphIndex: number,
     sentenceIndex: number,
-    sentence: { english: string; vietnamese: string }
+    _sentence: { english: string; vietnamese: string }
   ): void => {
     setActiveSentence({ paragraphIndex, sentenceIndex })
     setShowTranslation(true) // Show translation when clicking a sentence
@@ -38,6 +39,46 @@ function ParagraphTranslator(): React.JSX.Element {
 
   const handleHideTranslation = (): void => {
     setShowTranslation(false) // Only hide translation, keep sentence selected
+  }
+
+  const handleTranslationEdit = async (
+    paragraphIndex: number,
+    sentenceIndex: number,
+    newTranslation: string
+  ): Promise<void> => {
+    // Update the paragraphs state
+    const updatedParagraphs = paragraphs.map((paragraph, pIdx) => {
+      if (pIdx === paragraphIndex) {
+        return paragraph.map((sentence, sIdx) => {
+          if (sIdx === sentenceIndex) {
+            return { ...sentence, vietnamese: newTranslation }
+          }
+          return sentence
+        })
+      }
+      return paragraph
+    })
+    
+    setParagraphs(updatedParagraphs)
+
+    // Save to file if a file is loaded
+    if (loadedFileName) {
+      try {
+        const fileContent = JSON.stringify(updatedParagraphs, null, 2)
+        const blob = new Blob([fileContent], { type: 'application/json' })
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = loadedFileName
+        a.click()
+        URL.revokeObjectURL(url)
+        
+        setError('✓ Translation updated and file ready for download!')
+        setTimeout(() => setError(null), 3000)
+      } catch (err) {
+        setError('Failed to save file: ' + (err instanceof Error ? err.message : String(err)))
+      }
+    }
   }
 
   // Count total matches
@@ -177,15 +218,64 @@ function ParagraphTranslator(): React.JSX.Element {
 
       setParagraphs(data as Paragraph[])
       setLoadedFileName(filePath.split('/').pop() || filePath.split('\\').pop() || 'Unknown')
+      setLoadedFilePath(filePath)
       setActiveSentence(null)
     } catch (err) {
       setError(`Error loading file: ${err instanceof Error ? err.message : 'Unknown error'}`)
     }
   }
 
+  const handleReloadFile = async (): Promise<void> => {
+    if (!loadedFilePath) {
+      setError('No file loaded to reload')
+      return
+    }
+
+    try {
+      setError(null)
+      
+      if (!window.api || !window.api.readJSONFile) {
+        setError('File API not available. Please restart the application.')
+        return
+      }
+      
+      const data = await window.api.readJSONFile(loadedFilePath)
+
+      // Validate structure
+      if (!Array.isArray(data)) {
+        setError('Invalid file format: Expected an array of paragraphs')
+        return
+      }
+
+      const isValid = data.every(
+        (paragraph) =>
+          Array.isArray(paragraph) &&
+          paragraph.every(
+            (sentence) =>
+              typeof sentence === 'object' &&
+              'english' in sentence &&
+              'vietnamese' in sentence
+          )
+      )
+
+      if (!isValid) {
+        setError('Invalid file format: Each paragraph must contain sentence objects with "english" and "vietnamese" keys')
+        return
+      }
+
+      setParagraphs(data as Paragraph[])
+      setActiveSentence(null)
+      setError('✓ File reloaded successfully!')
+      setTimeout(() => setError(null), 2000)
+    } catch (err) {
+      setError(`Error reloading file: ${err instanceof Error ? err.message : 'Unknown error'}`)
+    }
+  }
+
   const handleReset = (): void => {
     setParagraphs(DEFAULT_PARAGRAPHS)
     setLoadedFileName(null)
+    setLoadedFilePath(null)
     setError(null)
     setActiveSentence(null)
   }
@@ -307,6 +397,15 @@ function ParagraphTranslator(): React.JSX.Element {
               >
                 📄 Load Article
               </button>
+              {loadedFileName && (
+                <button
+                  onClick={handleReloadFile}
+                  className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium"
+                  title="Reload the current article file from disk"
+                >
+                  🔄 Reload Article
+                </button>
+              )}
               <button
                 onClick={handleLoadQuiz}
                 disabled={paragraphs === DEFAULT_PARAGRAPHS && !loadedFileName}
@@ -369,6 +468,7 @@ function ParagraphTranslator(): React.JSX.Element {
                     searchQuery={searchQuery}
                     caseSensitive={caseSensitive}
                     showTranslation={showTranslation}
+                    onTranslationEdit={handleTranslationEdit}
                   />
                 ))}
               </div>
@@ -392,6 +492,7 @@ function ParagraphTranslator(): React.JSX.Element {
                 searchQuery={searchQuery}
                 caseSensitive={caseSensitive}
                 showTranslation={showTranslation}
+                onTranslationEdit={handleTranslationEdit}
               />
             ))}
           </div>

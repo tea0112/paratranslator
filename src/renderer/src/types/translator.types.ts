@@ -31,6 +31,7 @@ export interface InteractiveParagraphProps {
   caseSensitive?: boolean
   currentMatchIndex?: number
   showTranslation: boolean
+  onTranslationEdit?: (paragraphIndex: number, sentenceIndex: number, newTranslation: string) => void
 }
 
 /**
