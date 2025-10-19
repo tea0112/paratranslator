@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
 import InteractiveParagraph from './InteractiveParagraph'
+import QuizPractice from './QuizPractice'
 import { Paragraph } from '../types/translator.types'
+import { Quiz } from '../types/quiz.types'
 import { DEFAULT_PARAGRAPHS } from '../data/sampleData'
 
 function ParagraphTranslator(): React.JSX.Element {
@@ -18,6 +20,11 @@ function ParagraphTranslator(): React.JSX.Element {
   const [currentMatchIndex, setCurrentMatchIndex] = useState(0)
   const searchInputRef = useRef<HTMLInputElement>(null)
   const matchRefs = useRef<HTMLElement[]>([])
+  
+  // Quiz state
+  const [quiz, setQuiz] = useState<Quiz | null>(null)
+  const [quizMode, setQuizMode] = useState(false)
+  const [quizFileName, setQuizFileName] = useState<string | null>(null)
 
   const handleSentenceClick = (
     paragraphIndex: number,
@@ -190,6 +197,90 @@ function ParagraphTranslator(): React.JSX.Element {
     setTimeout(() => setCopiedAll(false), 2000)
   }
 
+  const handleLoadQuiz = async (): Promise<void> => {
+    try {
+      setError(null)
+      
+      if (!window.api || !window.api.openFileDialog) {
+        setError('File API not available. Please restart the application.')
+        return
+      }
+      
+      const filePath = await window.api.openFileDialog()
+      if (!filePath) return
+
+      const data = await window.api.readJSONFile(filePath)
+
+      // Validate quiz structure
+      if (!data || typeof data !== 'object' || !Array.isArray((data as any).quiz)) {
+        setError('Invalid quiz format: Expected an object with a "quiz" array')
+        return
+      }
+
+      const quizData = data as Quiz
+
+      // Validate each question has required fields
+      const isValid = quizData.quiz.every((question, index) => {
+        if (!question.id || typeof question.id !== 'number') {
+          setError(`Invalid question at index ${index}: Missing or invalid 'id' field`)
+          return false
+        }
+        if (!question.type || typeof question.type !== 'string') {
+          setError(`Invalid question ${question.id}: Missing or invalid 'type' field`)
+          return false
+        }
+        // At least one content field must exist: question, sentence, statement, or (headings + paragraphs for matching)
+        const hasStandardContent = question.question || question.sentence || question.statement
+        const hasMatchingContent = question.headings && question.paragraphs
+        
+        if (!hasStandardContent && !hasMatchingContent) {
+          setError(`Invalid question ${question.id}: Missing content field (question/sentence/statement or headings+paragraphs)`)
+          return false
+        }
+        
+        if (question.question && typeof question.question !== 'string') {
+          setError(`Invalid question ${question.id}: 'question' field must be a string`)
+          return false
+        }
+        if (question.sentence && typeof question.sentence !== 'string') {
+          setError(`Invalid question ${question.id}: 'sentence' field must be a string`)
+          return false
+        }
+        if (question.statement && typeof question.statement !== 'string') {
+          setError(`Invalid question ${question.id}: 'statement' field must be a string`)
+          return false
+        }
+        if (question.headings && !Array.isArray(question.headings)) {
+          setError(`Invalid question ${question.id}: 'headings' field must be an array`)
+          return false
+        }
+        if (question.paragraphs && !Array.isArray(question.paragraphs)) {
+          setError(`Invalid question ${question.id}: 'paragraphs' field must be an array`)
+          return false
+        }
+        if (question.answer === undefined || question.answer === null) {
+          setError(`Invalid question ${question.id}: Missing 'answer' field`)
+          return false
+        }
+        return true
+      })
+
+      if (!isValid) {
+        return
+      }
+
+      setQuiz(quizData)
+      setQuizFileName(filePath.split('/').pop() || filePath.split('\\').pop() || 'Unknown')
+      setQuizMode(true)
+    } catch (err) {
+      setError(`Error loading quiz: ${err instanceof Error ? err.message : 'Unknown error'}`)
+    }
+  }
+
+  const handleCloseQuiz = (): void => {
+    setQuizMode(false)
+  }
+
   return (
     <div className="flex justify-center p-4 md:p-8">
       <div className="w-full bg-white rounded-xl shadow-md p-6 md:p-10 lg:p-12 xl:p-16">
@@ -199,7 +290,7 @@ function ParagraphTranslator(): React.JSX.Element {
             Click on any underlined sentence to see its translation appear inline.
           </p>
 
-          {!showSearch && (
+          {!showSearch && !quizMode && (
             <div className="mt-4 text-sm text-gray-400">
               Press <kbd className="px-2 py-1 bg-gray-100 border border-gray-300 rounded text-xs font-mono">Ctrl+F</kbd> to search
             </div>
@@ -207,12 +298,18 @@ function ParagraphTranslator(): React.JSX.Element {
 
           {/* File Loader */}
           <div className="mt-6 flex flex-col items-center gap-3">
-            <div className="flex gap-3">
+            <div className="flex gap-3 flex-wrap justify-center">
               <button
                 onClick={handleLoadFile}
                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
               >
-                Load JSON File
+                📄 Load Text File
+              </button>
+              <button
+                onClick={handleLoadQuiz}
+                className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium"
+              >
+                🧪 Load Quiz
               </button>
               <button
                 onClick={handleCopyAllEnglish}
@@ -231,9 +328,15 @@ function ParagraphTranslator(): React.JSX.Element {
               )}
             </div>
 
-            {loadedFileName && (
+            {loadedFileName && !quizMode && (
               <div className="text-sm text-green-600 font-medium">
-                📄 Loaded: {loadedFileName}
+                📄 Text Loaded: {loadedFileName}
+              </div>
+            )}
+
+            {quizFileName && quizMode && (
+              <div className="text-sm text-purple-600 font-medium">
+                🧪 Quiz Loaded: {quizFileName}
               </div>
             )}
 
@@ -245,24 +348,28 @@ function ParagraphTranslator(): React.JSX.Element {
           </div>
         </header>
 
-        <div className="space-y-6 text-gray-700 text-lg leading-relaxed" id="content-area">
-          {paragraphs.map((paragraph, index) => (
-            <InteractiveParagraph
-              key={index}
-              sentences={paragraph}
-              onSentenceClick={handleSentenceClick}
-              onHideTranslation={handleHideTranslation}
-              activeSentence={activeSentence}
-              paragraphIndex={index}
-              searchQuery={searchQuery}
-              caseSensitive={caseSensitive}
-            />
-          ))}
-        </div>
+        {quizMode ? (
+          <QuizPractice quiz={quiz} onClose={handleCloseQuiz} />
+        ) : (
+          <div className="space-y-6 text-gray-700 text-lg leading-relaxed" id="content-area">
+            {paragraphs.map((paragraph, index) => (
+              <InteractiveParagraph
+                key={index}
+                sentences={paragraph}
+                onSentenceClick={handleSentenceClick}
+                onHideTranslation={handleHideTranslation}
+                activeSentence={activeSentence}
+                paragraphIndex={index}
+                searchQuery={searchQuery}
+                caseSensitive={caseSensitive}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
       {/* VS Code-like Floating Search Bar */}
-      {showSearch && (
+      {showSearch && !quizMode && (
         <div className="fixed top-4 right-4 bg-white shadow-lg border border-gray-300 rounded-lg p-2 flex items-center gap-2 z-50">
           <input
             ref={searchInputRef}
