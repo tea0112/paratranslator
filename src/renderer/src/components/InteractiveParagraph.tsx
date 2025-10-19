@@ -180,6 +180,7 @@ function InteractiveParagraph({
                           onClick={(e) => e.stopPropagation()}
                           className="flex-1 px-3 py-2 border border-blue-300 rounded text-sm not-italic text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[80px] resize-y"
                           autoFocus
+                          spellCheck={false}
                           style={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word' }}
                         />
                       </div>
