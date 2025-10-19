@@ -30,6 +30,7 @@ export interface InteractiveParagraphProps {
   searchQuery?: string
   caseSensitive?: boolean
   currentMatchIndex?: number
+  showTranslation: boolean
 }
 
 /**

@@ -10,6 +10,7 @@ function ParagraphTranslator(): React.JSX.Element {
     paragraphIndex: number
     sentenceIndex: number
   } | null>(null)
+  const [showTranslation, setShowTranslation] = useState(true) // Control translation visibility separately
   const [paragraphs, setParagraphs] = useState<Paragraph[]>(DEFAULT_PARAGRAPHS)
   const [loadedFileName, setLoadedFileName] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -32,10 +33,11 @@ function ParagraphTranslator(): React.JSX.Element {
     sentence: { english: string; vietnamese: string }
   ): void => {
     setActiveSentence({ paragraphIndex, sentenceIndex })
+    setShowTranslation(true) // Show translation when clicking a sentence
   }
 
   const handleHideTranslation = (): void => {
-    setActiveSentence(null)
+    setShowTranslation(false) // Only hide translation, keep sentence selected
   }
 
   // Count total matches
@@ -366,6 +368,7 @@ function ParagraphTranslator(): React.JSX.Element {
                     paragraphIndex={index}
                     searchQuery={searchQuery}
                     caseSensitive={caseSensitive}
+                    showTranslation={showTranslation}
                   />
                 ))}
               </div>
@@ -388,6 +391,7 @@ function ParagraphTranslator(): React.JSX.Element {
                 paragraphIndex={index}
                 searchQuery={searchQuery}
                 caseSensitive={caseSensitive}
+                showTranslation={showTranslation}
               />
             ))}
           </div>

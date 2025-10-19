@@ -9,7 +9,8 @@ function InteractiveParagraph({
   activeSentence,
   paragraphIndex,
   searchQuery,
-  caseSensitive
+  caseSensitive,
+  showTranslation
 }: InteractiveParagraphProps): React.JSX.Element {
   const [copied, setCopied] = useState(false)
 
@@ -55,7 +56,7 @@ function InteractiveParagraph({
                 matchOffset={getMatchOffsetForSentence(index)}
               />
               {/* Show translation inline with hide and copy buttons */}
-              {isActive && (
+              {isActive && showTranslation && (
                 <span className="inline-flex items-center gap-3 ml-3 mr-3 px-3 py-2 bg-blue-50 text-blue-700 rounded-lg text-sm italic border border-blue-200">
                   <button
                     onClick={(e) => {
