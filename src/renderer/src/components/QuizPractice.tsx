@@ -120,33 +120,56 @@ function QuizPractice({ quiz, onClose }: QuizPracticeProps): React.JSX.Element {
   }
 
   const calculateScore = () => {
-    if (!quiz) return { correct: 0, total: 0, percentage: 0 }
+    if (!quiz) return { correct: 0, total: 0, percentage: 0, details: [] }
     
     let correct = 0
-    quiz.quiz.forEach((question) => {
+    const details: Array<{ questionNum: number; question: string; type: string; status: 'correct' | 'incorrect' | 'skipped'; id: number }> = []
+    
+    quiz.quiz.forEach((question, index) => {
       const userAns = userAnswers.get(question.id)
-      if (!userAns) return
+      
+      if (!userAns) {
+        details.push({
+          questionNum: index + 1,
+          question: question.question || question.statement || 'Question',
+          type: question.type,
+          status: 'skipped',
+          id: question.id
+        })
+        return
+      }
       
       const answer = question.answer
+      let isCorrect = false
       
       // Check if answer is correct
       if (typeof answer === 'object' && !Array.isArray(answer) && typeof userAns === 'object' && !Array.isArray(userAns)) {
-        if (Object.keys(answer).every(key => answer[key] === userAns[key])) correct++
+        isCorrect = Object.keys(answer).every(key => answer[key] === userAns[key])
       } else if (Array.isArray(answer)) {
         if (Array.isArray(userAns)) {
-          if (answer.length === userAns.length && answer.every(a => userAns.includes(a))) correct++
+          isCorrect = answer.length === userAns.length && answer.every(a => userAns.includes(a))
         } else if (typeof userAns === 'string') {
-          if (answer.length === 1 && answer[0] === userAns) correct++
+          isCorrect = answer.length === 1 && answer[0] === userAns
         }
       } else if (typeof answer === 'string' && typeof userAns === 'string') {
-        if (userAns.trim().toLowerCase() === answer.toLowerCase()) correct++
+        isCorrect = userAns.trim().toLowerCase() === answer.toLowerCase()
       }
+      
+      if (isCorrect) correct++
+      
+      details.push({
+        questionNum: index + 1,
+        question: question.question || question.statement || 'Question',
+        type: question.type,
+        status: isCorrect ? 'correct' : 'incorrect',
+        id: question.id
+      })
     })
     
     const total = quiz.quiz.length
     const percentage = total > 0 ? Math.round((correct / total) * 100) : 0
     
-    return { correct, total, percentage }
+    return { correct, total, percentage, details }
   }
 
   const handleSubmit = () => {
@@ -510,8 +533,8 @@ function QuizPractice({ quiz, onClose }: QuizPracticeProps): React.JSX.Element {
 
       {/* Statistics Modal */}
       {showStatistics && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-2xl p-8 max-w-2xl w-full mx-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl p-8 max-w-3xl w-full max-h-[90vh] overflow-y-auto">
             <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">📊 Quiz Results</h2>
             
             {(() => {
@@ -571,6 +594,50 @@ function QuizPractice({ quiz, onClose }: QuizPracticeProps): React.JSX.Element {
                         <span className="text-gray-700">Skipped: <strong>{stats.total - userAnswers.size}</strong></span>
                       </div>
                     </div>
+                  </div>
+
+                  {/* Detailed Results List */}
+                  <div className="mb-6">
+                    <h3 className="font-semibold text-gray-800 mb-3">Question Details:</h3>
+                    <div className="max-h-64 overflow-y-auto bg-white border border-gray-200 rounded-lg">
+                      {stats.details.map((detail) => (
+                        <div
+                          key={detail.id}
+                          className={`flex items-center gap-3 p-3 border-b border-gray-100 hover:bg-gray-50 cursor-pointer ${
+                            detail.status === 'correct' ? 'bg-green-50' :
+                            detail.status === 'incorrect' ? 'bg-red-50' :
+                            'bg-gray-50'
+                          }`}
+                          onClick={() => {
+                            setShowStatistics(false)
+                            setCurrentIndex(detail.questionNum - 1)
+                          }}
+                        >
+                          <span className="text-2xl">
+                            {detail.status === 'correct' ? '✅' : 
+                             detail.status === 'incorrect' ? '❌' : 
+                             '⏭️'}
+                          </span>
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2">
+                              <span className="font-semibold text-gray-700">Q{detail.questionNum}</span>
+                              <span className="text-xs text-gray-500 bg-gray-200 px-2 py-0.5 rounded">
+                                {detail.type}
+                              </span>
+                            </div>
+                            <p className="text-sm text-gray-600 mt-1 line-clamp-1">{detail.question}</p>
+                          </div>
+                          <span className={`text-xs font-semibold px-2 py-1 rounded ${
+                            detail.status === 'correct' ? 'bg-green-200 text-green-800' :
+                            detail.status === 'incorrect' ? 'bg-red-200 text-red-800' :
+                            'bg-gray-200 text-gray-600'
+                          }`}>
+                            {detail.status.toUpperCase()}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                    <p className="text-xs text-gray-500 mt-2 text-center">Click on a question to review it</p>
                   </div>
 
                   {/* Action Buttons */}
