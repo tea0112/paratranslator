@@ -1,6 +1,6 @@
 import { app, shell, BrowserWindow, ipcMain, dialog, Menu } from 'electron'
 import { join } from 'path'
-import { readFile } from 'fs/promises'
+import { readFile, writeFile } from 'fs/promises'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 
@@ -85,6 +85,18 @@ app.whenReady().then(() => {
       return JSON.parse(data)
     } catch (error) {
       console.error('Error reading file:', error)
+      throw error
+    }
+  })
+
+  // File write handler
+  ipcMain.handle('file:writeJSON', async (_, filePath: string, data: unknown) => {
+    try {
+      const jsonString = JSON.stringify(data, null, 2)
+      await writeFile(filePath, jsonString, 'utf-8')
+      return { success: true }
+    } catch (error) {
+      console.error('Error writing file:', error)
       throw error
     }
   })

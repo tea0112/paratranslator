@@ -61,19 +61,11 @@ function ParagraphTranslator(): React.JSX.Element {
     
     setParagraphs(updatedParagraphs)
 
-    // Save to file if a file is loaded
-    if (loadedFileName) {
+    // Auto-save to file if a file is loaded
+    if (loadedFilePath) {
       try {
-        const fileContent = JSON.stringify(updatedParagraphs, null, 2)
-        const blob = new Blob([fileContent], { type: 'application/json' })
-        const url = URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.href = url
-        a.download = loadedFileName
-        a.click()
-        URL.revokeObjectURL(url)
-        
-        setError('✓ Translation updated and file ready for download!')
+        await window.api.writeJSONFile(loadedFilePath, updatedParagraphs)
+        setError('✓ Translation updated and saved!')
         setTimeout(() => setError(null), 3000)
       } catch (err) {
         setError('Failed to save file: ' + (err instanceof Error ? err.message : String(err)))

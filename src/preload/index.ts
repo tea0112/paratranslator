@@ -4,7 +4,8 @@ import { electronAPI } from '@electron-toolkit/preload'
 // Custom APIs for renderer
 const api = {
   openFileDialog: () => ipcRenderer.invoke('dialog:openFile'),
-  readJSONFile: (filePath: string) => ipcRenderer.invoke('file:readJSON', filePath)
+  readJSONFile: (filePath: string) => ipcRenderer.invoke('file:readJSON', filePath),
+  writeJSONFile: (filePath: string, data: unknown) => ipcRenderer.invoke('file:writeJSON', filePath, data)
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to
