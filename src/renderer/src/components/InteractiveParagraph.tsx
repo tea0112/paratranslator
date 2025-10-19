@@ -7,7 +7,9 @@ function InteractiveParagraph({
   onSentenceClick,
   onHideTranslation,
   activeSentence,
-  paragraphIndex
+  paragraphIndex,
+  searchQuery,
+  caseSensitive
 }: InteractiveParagraphProps): React.JSX.Element {
   const [copied, setCopied] = useState(false)
 
@@ -15,6 +17,22 @@ function InteractiveParagraph({
     navigator.clipboard.writeText(text)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
+  }
+
+  // Calculate match offset for each sentence
+  const getMatchOffsetForSentence = (sentenceIndex: number): number => {
+    if (!searchQuery || !searchQuery.trim()) return 0
+    
+    let offset = 0
+    for (let i = 0; i < sentenceIndex; i++) {
+      const text = sentences[i].english
+      const pattern = caseSensitive ? searchQuery : searchQuery.toLowerCase()
+      const searchText = caseSensitive ? text : text.toLowerCase()
+      const escapedPattern = pattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      const matches = searchText.match(new RegExp(escapedPattern, 'g'))
+      if (matches) offset += matches.length
+    }
+    return offset
   }
 
   return (
@@ -32,6 +50,9 @@ function InteractiveParagraph({
                 sentence={sentence}
                 isActive={isActive}
                 onClick={() => onSentenceClick(paragraphIndex, index, sentence)}
+                searchQuery={searchQuery}
+                caseSensitive={caseSensitive}
+                matchOffset={getMatchOffsetForSentence(index)}
               />
               {/* Show translation inline with hide and copy buttons */}
               {isActive && (

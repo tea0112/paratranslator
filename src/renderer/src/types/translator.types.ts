@@ -27,6 +27,9 @@ export interface InteractiveParagraphProps {
   onHideTranslation: () => void
   activeSentence: { paragraphIndex: number; sentenceIndex: number } | null
   paragraphIndex: number
+  searchQuery?: string
+  caseSensitive?: boolean
+  currentMatchIndex?: number
 }
 
 /**
@@ -36,6 +39,10 @@ export interface InteractiveSentenceProps {
   sentence: Sentence
   isActive: boolean
   onClick: () => void
+  searchQuery?: string
+  caseSensitive?: boolean
+  onMatchRender?: (element: HTMLElement | null) => void
+  matchOffset?: number
 }
 
 /**
