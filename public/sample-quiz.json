@@ -1,0 +1,66 @@
+{
+  "quiz": [
+    {
+      "id": 1,
+      "type": "Multiple Choice",
+      "question": "The main question text goes here.",
+      "options": [
+        "Option A",
+        "Option B",
+        "Option C",
+        "Option D"
+      ],
+      "answer": [
+        "Option B",
+        "Option C"
+      ],
+      "explanation": "TheThis is the explanation why."
+    },
+    {
+      "id": 2,
+      "type": "Identifying Information/Views",
+      "instruction": "Is the following statement True, False, or Not Given based on the article?",
+      "statement": "The statement to be evaluated goes here.",
+      "answer": "True",
+      "explanation": "This is the explanation why."
+    },
+    {
+      "id": 3,
+      "type": "Matching Tasks",
+      "instruction": "Match the following headings to the correct paragraph letters (A-D).",
+      "headings": [
+        "Heading 1",
+        "Heading 2",
+        "Heading 3",
+        "Heading 4"
+      ],
+      "paragraphs": [
+        "Paragraph A",
+        "Paragraph B",
+        "Paragraph C",
+        "Paragraph D"
+      ],
+      "answer": {
+        "Heading 1": "Paragraph C",
+        "Heading 2": "Paragraph A"
+      },
+      "explanation": "This is the explanation why."
+    },
+    {
+      "id": 4,
+      "type": "Completion Tasks (Gap-fill)",
+      "instruction": "Complete the sentence using one word from the article.",
+      "sentence": "The article states that learning is an __________ process.",
+      "answer": "ongoing",
+      "explanation": "This is the explanation why."
+    },
+    {
+      "id": 5,
+      "type": "Short-Answer Questions",
+      "instruction": "Answer the question using no more than three words from the text.",
+      "question": "What did the researchers discover in the final phase?",
+      "answer": "a surprising outcome",
+      "explanation": "This is the explanation why."
+    }
+  ]
+}
