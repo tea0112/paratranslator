@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: paratranslator-app
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+    networks:
+      - paratranslator-network
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: paratranslator-tunnel
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run
+    environment:
+      - TUNNEL_TOKEN=${TUNNEL_TOKEN}
+    networks:
+      - paratranslator-network
+    depends_on:
+      - app
+
+networks:
+  paratranslator-network:
+    driver: bridge

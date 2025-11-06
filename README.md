@@ -44,7 +44,7 @@ npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) to view the app.
+Open [http://localhost:3001](http://localhost:3001) to view the app.
 
 ### Build for Production
 
@@ -52,6 +52,18 @@ Open [http://localhost:3000](http://localhost:3000) to view the app.
 npm run build
 npm start
 ```
+
+## 🚀 Deployment
+
+### Quick Deploy with Docker (Recommended)
+
+```bash
+./docker-deploy.sh
+```
+
+Your site will be live at `https://your-domain.com`
+
+For detailed deployment instructions (Docker, Cloudflare Tunnel, domain setup, etc.), see **[DEPLOYMENT.md](./DEPLOYMENT.md)**
 
 ## File Formats
 

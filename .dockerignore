@@ -1,0 +1,14 @@
+Dockerfile
+.dockerignore
+node_modules
+npm-debug.log
+README.md
+.next
+.git
+.gitignore
+*.md
+.env*.local
+.vscode
+.idea
+deploy.sh
+cloudflared-config.yml

@@ -1,0 +1,13 @@
+# Cloudflare Tunnel Configuration
+# Replace YOUR_TUNNEL_ID with your actual tunnel ID
+# Replace your-domain.com with your actual domain
+
+tunnel: YOUR_TUNNEL_ID
+credentials-file: /home/vmo/.cloudflared/YOUR_TUNNEL_ID.json
+
+ingress:
+  - hostname: your-domain.com
+    service: http://app:3001
+  - hostname: www.your-domain.com
+    service: http://app:3001
+  - service: http_status:404
